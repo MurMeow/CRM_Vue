@@ -1,7 +1,19 @@
 <template>
   <form class="card auth-card" @submit.prevent="submitHandler">
     <div class="card-content">
-      <span class="card-title">Домашняя бухгалтерия</span>
+
+      <div class="card-titleWithSwitch">
+        <span class="card-title">{{'HomeAccounting' | localize}}</span>
+
+        <div class="switch">
+          <label @click="updateLocale">
+            English
+            <input type="checkbox" v-model="isRuLocale">
+            <span class="lever"></span>
+            Русский
+          </label>
+        </div>
+      </div>
       <div class="input-field">
         <input
           id="email"
@@ -12,10 +24,10 @@
         <label for="email">Email</label>
         <small class="helper-text invalid"
                v-if="$v.email.$dirty && !$v.email.required"
-        >Поле Email не должно быть пустым</small>
+        >{{'EmailFieldMustNotBeEmpty' | localize}}</small>
         <small class="helper-text invalid"
                v-else-if="$v.email.$dirty && !$v.email.email"
-        >Введите корректный Email</small>
+        >{{'EnterValidEmail' | localize}}</small>
       </div>
       <div class="input-field">
         <input
@@ -25,16 +37,16 @@
           :class="{invalid: ($v.password.$dirty && !$v.password.required) || ($v.password.$dirty && !$v.password.minLength)}"
 
         >
-        <label for="password">Пароль</label>
+        <label for="password">{{'Password' | localize}}</label>
         <small class="helper-text invalid"
                v-if="$v.password.$dirty && !$v.password.required"
         >
-          Введите пароль
+          {{'EnterPassword' | localize}}
         </small>
         <small class="helper-text invalid"
                v-else-if="$v.password.$dirty && !$v.password.minLength"
         >
-          Пароль должен быть не менее {{$v.password.$params.minLength.min}} символов. Сейчас он {{password.length}}
+          {{'PasswordMustBeAtLeast' | localize}} {{$v.password.$params.minLength.min}} {{'Symbols' | localize}} {{'NowHeIs' | localize}} {{password.length}}
         </small>
       </div>
       <div class="input-field">
@@ -44,17 +56,17 @@
           type="text"
           v-model.trim="name"
         >
-        <label for="name">Имя</label>
+        <label for="name">{{'Name' | localize}}</label>
         <small class="helper-text invalid"
                v-if="$v.name.$dirty && !$v.name.required"
         >
-          Введите ваше имя
+          {{'EnterYourName' | localize}}
         </small>
       </div>
       <p>
         <label>
           <input type="checkbox" v-model="agree"/>
-          <span>С правилами согласен</span>
+          <span>{{'IAgreeWithTheRules' | localize}}</span>
         </label>
       </p>
     </div>
@@ -64,14 +76,14 @@
           class="btn waves-effect waves-light auth-submit"
           type="submit"
         >
-          Зарегистрироваться
+          {{'SignUp' | localize}}
           <i class="material-icons right">send</i>
         </button>
       </div>
 
       <p class="center">
-        Уже есть аккаунт?
-        <router-link to="/login">Войти!</router-link>
+        {{'AlreadyHaveAnAccount' | localize}}?
+        <router-link to="/login">{{'SignIn' | localize}}!</router-link>
       </p>
     </div>
   </form>
@@ -82,11 +94,17 @@ import { email, minLength, required } from 'vuelidate/lib/validators'
 
 export default {
   name: 'register',
+  metaInfo () {
+    return {
+      title: this.$title('Register')
+    }
+  },
   data: () => ({
     email: '',
     password: '',
     name: '',
-    agree: false
+    agree: false,
+    isRuLocale: localStorage.getItem('locale') === 'ru-RU' || localStorage.getItem('locale') === null
   }),
   validations: {
     email: { email, required },
@@ -94,7 +112,12 @@ export default {
     name: { required },
     agree: { checked: v => v }
   },
+  mounted () {
+  },
   methods: {
+    updateLocale () {
+      this.isRuLocale ? localStorage.setItem('locale', 'en-US') : localStorage.setItem('locale', 'ru-RU')
+    },
     async submitHandler () {
       if (this.$v.$invalid) {
         this.$v.$touch()
@@ -103,7 +126,8 @@ export default {
       const formData = {
         email: this.email,
         password: this.password,
-        name: this.name
+        name: this.name,
+        locale: this.isRuLocale ? 'ru-RU' : 'en-US'
       }
 
       try {
@@ -114,3 +138,11 @@ export default {
   }
 }
 </script>
+
+<style>
+  .card-titleWithSwitch {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+</style>

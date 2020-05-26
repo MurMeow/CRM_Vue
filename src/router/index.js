@@ -1,9 +1,10 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import firebase from 'firebase/app'
 
 Vue.use(Router)
 
-export default new Router({
+const router = new Router({
   mode: 'history',
   base: process.env.BASE_URL,
   routes: [
@@ -11,7 +12,8 @@ export default new Router({
       path: '/',
       name: 'Home',
       meta: {
-        layout: 'main'
+        layout: 'main',
+        auth: true
       },
       component: () => import('../views/Home')
     },
@@ -35,7 +37,8 @@ export default new Router({
       path: '/categories',
       name: 'Categories',
       meta: {
-        layout: 'main'
+        layout: 'main',
+        auth: true
       },
       component: () => import('../views/Categories')
     },
@@ -43,7 +46,8 @@ export default new Router({
       path: '/record',
       name: 'Record',
       meta: {
-        layout: 'main'
+        layout: 'main',
+        auth: true
       },
       component: () => import('../views/Record')
     },
@@ -51,7 +55,8 @@ export default new Router({
       path: '/profile',
       name: 'Profile',
       meta: {
-        layout: 'main'
+        layout: 'main',
+        auth: true
       },
       component: () => import('../views/Profile')
     },
@@ -59,7 +64,8 @@ export default new Router({
       path: '/planning',
       name: 'Planning',
       meta: {
-        layout: 'main'
+        layout: 'main',
+        auth: true
       },
       component: () => import('../views/Planning')
     },
@@ -67,17 +73,32 @@ export default new Router({
       path: '/history',
       name: 'History',
       meta: {
-        layout: 'main'
+        layout: 'main',
+        auth: true
       },
       component: () => import('../views/History')
     },
     {
-      path: '/detailRecord',
-      name: 'DetailRecord',
+      path: '/detail/:id',
+      name: 'Detail',
       meta: {
-        layout: 'main'
+        layout: 'main',
+        auth: true
       },
-      component: () => import('../views/DetailRecord')
+      component: () => import('../views/Detail')
     }
   ]
 })
+
+router.beforeEach((to, from, next) => {
+  const currentUser = firebase.auth().currentUser
+  const requireAuth = to.matched.some(record => record.meta.auth)
+
+  if (requireAuth && !currentUser) {
+    next('/login?message=login')
+  } else {
+    next()
+  }
+})
+
+export default router
